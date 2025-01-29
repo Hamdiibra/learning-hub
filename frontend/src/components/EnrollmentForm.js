@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import './EnrollmentForm.css'; // Assuming you want to add some custom styles
 
 function EnrollmentForm({ courseId }) {
   const [userId, setUserId] = useState(1); // Assume User ID 1 for testing
@@ -13,7 +14,9 @@ function EnrollmentForm({ courseId }) {
       .then((data) => alert(data.message));
   };
 
-  return <button onClick={handleEnroll}>Enroll</button>;
+  return (
+    <button className="enroll-button" onClick={handleEnroll}>Enroll</button>
+  );
 }
 
 export default EnrollmentForm;

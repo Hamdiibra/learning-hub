@@ -1,25 +1,30 @@
 import React, { useState, useEffect } from "react";
 
 function Profile() {
-  const [userId, setUserId] = useState(1); // Test with User ID 1
+  const [userId] = useState(1);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetch(`http://127.0.0.1:5000/profile/${userId}`)
-      .then((res) => res.json())
-      .then((data) => setEnrolledCourses(data));
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch profile");
+        return res.json();
+      })
+      .then((data) => setEnrolledCourses(data.enrolled_courses))
+      .catch((error) => setError(error.message));
   }, [userId]);
 
   return (
     <div>
       <h2>Your Enrolled Courses</h2>
+      {error && <p style={{ color: "red" }}>{error}</p>}
       {enrolledCourses.length === 0 ? (
         <p>You are not enrolled in any courses.</p>
       ) : (
         enrolledCourses.map((course, index) => (
           <div key={index}>
-            <h3>{course.course_name}</h3>
-            <p>Progress: {course.progress}</p>
+            <h3>{course.name}</h3>
           </div>
         ))
       )}

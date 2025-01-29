@@ -1,21 +1,28 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import styles from './Navbar';
+import { Link, useNavigate } from "react-router-dom";
+import "./Navbar.css";
 
 function Navbar() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
   return (
-    <nav className={styles.Navbar}>
-      <div className={styles["navbar-logo"]}>
-        <h2>WELCOME TO LEARNING-HUB</h2>
+    <nav className="navbar">
+      <div className="navbar-logo">
+        <h2>LEARNING HUB</h2>
       </div>
-      <ul>
+      <ul className="navbar-links">
         <li><Link to="/">Home</Link></li>
         <li><Link to="/courses">Courses</Link></li>
         <li><Link to="/profile">Profile</Link></li>
+        <li><button onClick={handleLogout} className="logout-btn">Logout</button></li>
       </ul>
     </nav>
   );
 }
 
 export default Navbar;
-
