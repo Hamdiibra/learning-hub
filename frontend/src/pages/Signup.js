@@ -2,6 +2,7 @@ import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
+import "./AuthStyles.css"; // Import external CSS for styling
 
 const SignupSchema = Yup.object().shape({
   name: Yup.string().required("Required"),
@@ -13,8 +14,8 @@ function Signup() {
   const navigate = useNavigate();
 
   return (
-    <div>
-      <h2>Sign Up Page</h2>
+    <div className="auth-container">
+      <h2 className="auth-title">Sign Up</h2>
       <Formik
         initialValues={{ name: "", email: "", password: "" }}
         validationSchema={SignupSchema}
@@ -24,27 +25,32 @@ function Signup() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               username: values.name,
-              role: "student" // Assuming default role is student
+              email: values.email,
+              password: values.password,
+              role: "student", // Default role
             }),
           })
             .then((res) => res.json())
             .then(() => {
-              navigate("/courses");
+              navigate("/login"); // Redirect to login after signup
             });
         }}
       >
         {({ isSubmitting }) => (
-          <Form>
+          <Form className="auth-form">
             <label>Name:</label>
             <Field type="text" name="name" placeholder="Enter your name" />
-            <ErrorMessage name="name" component="div" />
+            <ErrorMessage name="name" component="div" className="error" />
+
             <label>Email:</label>
             <Field type="email" name="email" placeholder="Enter your email" />
-            <ErrorMessage name="email" component="div" />
+            <ErrorMessage name="email" component="div" className="error" />
+
             <label>Password:</label>
             <Field type="password" name="password" placeholder="Enter your password" />
-            <ErrorMessage name="password" component="div" />
-            <button type="submit" disabled={isSubmitting}>
+            <ErrorMessage name="password" component="div" className="error" />
+
+            <button type="submit" className="auth-button" disabled={isSubmitting}>
               Sign Up
             </button>
           </Form>
