@@ -1,34 +1,40 @@
 from flask import Blueprint, request, jsonify
 from models import db, User, Course, Enrollment
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
 course_routes = Blueprint('courses', __name__)
 
+@course_routes.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    user = User.query.filter_by(username=data.get('username')).first()
+    
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    access_token = create_access_token(identity=user.id)
+    return jsonify({"token": access_token, "user": {"id": user.id, "username": user.username, "role": user.role}})
+
 # Create Course
 @course_routes.route('/courses', methods=['POST'])
+@jwt_required()
 def create_course():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+
+    if not user or user.role != "instructor":
+        return jsonify({"error": "Unauthorized"}), 403
+
     data = request.get_json()
-
-    # Validate input
-    if not data.get('name') or len(data['name']) < 5:
-        return jsonify({"error": "Course name must be at least 5 characters"}), 400
-
-    # Validate instructor
-    instructor = User.query.get(data['instructor_id'])
-    if not instructor or instructor.role != 'instructor':
-        return jsonify({"error": "Only instructors can create courses"}), 403
-
-    # Create the course
-    new_course = Course(
-        name=data['name'],
-        instructor_id=instructor.id, 
-        description=data.get('description', '')
-    )
+    new_course = Course(name=data['name'], instructor_id=user.id)
     db.session.add(new_course)
     db.session.commit()
     return jsonify({"message": "Course created successfully!"})
+
+
 
 @course_routes.route('/courses/<int:course_id>', methods=['PATCH'])
 def update_course(course_id):
@@ -123,33 +129,24 @@ def enroll_user():
 def update_enrollment(enrollment_id):
     data = request.get_json()
     enrollment = Enrollment.query.get(enrollment_id)
+    
     if not enrollment:
         return jsonify({"error": "Enrollment not found"}), 404
 
+    # Update progress if provided
     if 'progress' in data:
         enrollment.progress = data['progress']
+
+    # Update grade if provided
+    if 'grade' in data:
+        grade = data['grade']
+        if not isinstance(grade, int) or grade < 0 or grade > 100:
+            return jsonify({"error": "Grade must be a number between 0 and 100"}), 400
+        enrollment.grade = grade
 
     db.session.commit()
     return jsonify({"message": "Enrollment updated successfully!"})
 
-@course_routes.route('/enrollments/<int:enrollment_id>', methods=['PATCH'])
-def assign_grade(enrollment_id):
-    data = request.get_json()
-    grade = data.get('grade')
-
-    # Validate grade
-    if grade is None or not isinstance(grade, int) or grade < 0 or grade > 100:
-        return jsonify({"error": "Grade must be a number between 0 and 100"}), 400
-
-    # Find the enrollment record
-    enrollment = Enrollment.query.get(enrollment_id)
-    if not enrollment:
-        return jsonify({"error": "Enrollment not found"}), 404
-
-    # Update the grade
-    enrollment.grade = grade
-    db.session.commit()
-    return jsonify({"message": "Grade assigned successfully!"})
 
 @course_routes.route('/enrollments', methods=['GET'])
 def get_enrollments():
