@@ -1,36 +1,19 @@
-from flask import Flask, jsonify, request
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_cors import CORS
+from models import db  # Use the db from models.py
+from routes import course_routes
 
 app = Flask(__name__)
-CORS(app)  # Allow frontend requests
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+db.init_app(app)  # Initialize db properly
+migrate = Migrate(app, db)
+CORS(app)
 
-enrollments = []  # Store user enrollments
-
-@app.route("/")
-def home():
-    return jsonify({"message": "Welcome to Learning Hub API"}), 200
-
-@app.route("/courses", methods=["GET"])
-def get_courses():
-    return jsonify(courses), 200
-
-@app.route("/enroll", methods=["POST"])
-def enroll():
-    data = request.json
-    user_id = data.get("user_id")
-    course_id = data.get("course_id")
-    
-    if not user_id or not course_id:
-        return jsonify({"error": "Missing data"}), 400
-    
-    enrollments.append({"user_id": user_id, "course_id": course_id})
-    return jsonify({"message": f"User {user_id} enrolled in course {course_id}"}), 201
-
-@app.route("/profile/<int:user_id>", methods=["GET"])
-def user_profile(user_id):
-    user_courses = [course for course in courses if {"user_id": user_id, "course_id": course["id"]} in enrollments]
-    return jsonify({"enrolled_courses": user_courses}), 200
+app.register_blueprint(course_routes)
 
 if __name__ == "__main__":
     app.run(debug=True)

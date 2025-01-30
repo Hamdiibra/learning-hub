@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardMedia, Typography, Grid, CircularProgress } from "@mui/material";
 import EnrollmentForm from "./EnrollmentForm";
 
 function Courses() {
@@ -11,24 +12,44 @@ function Courses() {
         if (!res.ok) throw new Error("Failed to fetch courses");
         return res.json();
       })
-      .then((data) => setCourses(data))
+      .then((data) => {
+        console.log(data); // Log the fetched data
+        setCourses(data);
+      })
       .catch((error) => setError(error.message));
   }, []);
 
   return (
     <div>
-      <h2>Available Courses</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <Typography variant="h4" gutterBottom>
+        Available Courses
+      </Typography>
+      {error && <Typography color="error">{error}</Typography>}
       {courses.length === 0 ? (
-        <p>No courses available.</p>
+        <CircularProgress />
       ) : (
-        courses.map((course) => (
-          <div key={course.id}>
-            <h3>{course.name}</h3>
-            <p>{course.description}</p>
-            <EnrollmentForm courseId={course.id} />
-          </div>
-        ))
+        <Grid container spacing={4}>
+          {courses.map((course) => (
+            <Grid item key={course.id} xs={12} sm={6} md={4}>
+              <Card>
+                <CardMedia
+                  component="img"
+                  height="140"
+                  image={course.image_url && course.image_url.startsWith("http") ? course.image_url : "https://via.placeholder.com/140"}
+                  alt={course.name}
+                />
+                <CardContent>
+                  <Typography variant="h5">{course.name}</Typography>
+                  <Typography variant="subtitle1" color="textSecondary">
+                    Instructor: {course.instructor.username}
+                  </Typography>
+                  <Typography variant="body2">{course.description}</Typography>
+                  <EnrollmentForm courseId={course.id} />
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       )}
     </div>
   );

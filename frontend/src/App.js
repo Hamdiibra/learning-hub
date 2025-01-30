@@ -4,7 +4,7 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Courses from "./components/Courses";
 import Profile from "./components/Profile";
-import Login from "./pages/login"; // Login page component
+import Login from "./pages/Login"; // Login page component
 import Signup from "./pages/Signup";
 
 function App() {

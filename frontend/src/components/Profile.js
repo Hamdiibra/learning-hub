@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { Card, CardContent, Typography, Grid } from "@mui/material";
 
 function Profile() {
-  const [userId] = useState(1);
+  const [userId] = useState(1); // Assume User ID 1 for testing
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [error, setError] = useState(null);
 
@@ -17,16 +18,24 @@ function Profile() {
 
   return (
     <div>
-      <h2>Your Enrolled Courses</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <Typography variant="h4" gutterBottom>
+        Your Enrolled Courses
+      </Typography>
+      {error && <Typography color="error">{error}</Typography>}
       {enrolledCourses.length === 0 ? (
-        <p>You are not enrolled in any courses.</p>
+        <Typography>You are not enrolled in any courses.</Typography>
       ) : (
-        enrolledCourses.map((course, index) => (
-          <div key={index}>
-            <h3>{course.name}</h3>
-          </div>
-        ))
+        <Grid container spacing={4}>
+          {enrolledCourses.map((course, index) => (
+            <Grid item key={index} xs={12} sm={6} md={4}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h5">{course.name}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       )}
     </div>
   );

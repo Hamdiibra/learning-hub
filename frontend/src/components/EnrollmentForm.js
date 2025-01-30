@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import './EnrollmentForm.css'; // Assuming you want to add some custom styles
+import './EnrollmentForm.css'; // Custom styles
 
 function EnrollmentForm({ courseId }) {
   const [userId, setUserId] = useState(1); // Assume User ID 1 for testing

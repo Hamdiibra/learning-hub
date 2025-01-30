@@ -14,19 +14,18 @@ class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     instructor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Link to User model
-    instructor = db.relationship('User', backref='created_courses', lazy=True)  # Only this backref remains
+    instructor = db.relationship('User', backref='courses_taught', lazy=True)
     description = db.Column(db.Text, nullable=True)
     image_url = db.Column(db.String(255), default="")  # URL for course image
     enrollments = db.relationship('Enrollment', back_populates='course')
-
-
 
 # Enrollment model
 class Enrollment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
-    progress = db.Column(db.String(20), default="Not Started")
+    progress = db.Column(db.String(20), nullable=False, default="Not Started")
+
 
     user = db.relationship('User', back_populates='enrolled_courses')
     course = db.relationship('Course', back_populates='enrollments')
