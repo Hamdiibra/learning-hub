@@ -29,7 +29,6 @@ class Enrollment(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
     progress = db.Column(db.String(20), nullable=False, default="Not Started")
-    grade = db.Column(db.Integer, nullable=True)
 
     user = db.relationship('User', back_populates='enrolled_courses')
     course = db.relationship('Course', back_populates='enrollments')

@@ -34,6 +34,24 @@ def create_course():
     db.session.commit()
     return jsonify({"message": "Course created successfully!"})
 
+@course_routes.route('/unenroll', methods=['DELETE'])
+def unenroll_user():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    course_id = data.get("course_id")
+
+    if not user_id or not course_id:
+        return jsonify({"error": "User ID and Course ID are required"}), 400
+
+    enrollment = Enrollment.query.filter_by(user_id=user_id, course_id=course_id).first()
+
+    if not enrollment:
+        return jsonify({"error": "Enrollment not found"}), 404
+
+    db.session.delete(enrollment)
+    db.session.commit()
+
+    return jsonify({"message": "Successfully unenrolled from course"}), 200
 
 
 @course_routes.route('/courses/<int:course_id>', methods=['PATCH'])
@@ -95,6 +113,8 @@ def create_user():
 
     new_user = User(
         username=data['username'],
+        email=data['email'],
+        password=data['password'],
         role=data['role']
     )
     db.session.add(new_user)
@@ -160,7 +180,9 @@ def get_enrollments():
 
 # Get Enrolled Courses for a User
 @course_routes.route('/profile/<int:user_id>', methods=['GET'])
-def get_user_profile(user_id):
+@jwt_required()
+def get_user_profile():
+    user_id = get_jwt_identity()
     user = User.query.get(user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404

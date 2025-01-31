@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import './EnrollmentForm.css'; // Custom styles
+import './EnrollmentForm.css';
 
-function EnrollmentForm({ courseId }) {
-  const [userId, setUserId] = useState(1); // Assume User ID 1 for testing
+function EnrollmentForm({ courseId, refreshProfile }) {
+  const [userId] = useState(1); // Assume User ID 1 for testing
 
   const handleEnroll = () => {
     fetch("http://127.0.0.1:5000/enroll", {
@@ -11,7 +11,10 @@ function EnrollmentForm({ courseId }) {
       body: JSON.stringify({ user_id: userId, course_id: courseId }),
     })
       .then((res) => res.json())
-      .then((data) => alert(data.message));
+      .then((data) => {
+        alert(data.message);
+        if (refreshProfile) refreshProfile(); // Refresh Profile after enrolling
+      });
   };
 
   return (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, Typography, Grid } from "@mui/material";
+import { Card, CardContent, Typography, Grid, Button } from "@mui/material";
 
 function Profile() {
   const [userId] = useState(1); // Assume User ID 1 for testing
@@ -16,6 +16,20 @@ function Profile() {
       .catch((error) => setError(error.message));
   }, [userId]);
 
+  const handleUnenroll = (courseId) => {
+    fetch("http://127.0.0.1:5000/unenroll", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId, course_id: courseId }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        alert(data.message);
+        setEnrolledCourses(enrolledCourses.filter((course) => course.id !== courseId));
+      })
+      .catch((error) => setError(error.message));
+  };
+
   return (
     <div>
       <Typography variant="h4" gutterBottom>
@@ -31,6 +45,14 @@ function Profile() {
               <Card>
                 <CardContent>
                   <Typography variant="h5">{course.name}</Typography>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => handleUnenroll(course.id)}
+                    style={{ marginTop: "10px" }}
+                  >
+                    Unenroll
+                  </Button>
                 </CardContent>
               </Card>
             </Grid>

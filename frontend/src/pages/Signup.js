@@ -31,8 +31,12 @@ function Signup() {
             }),
           })
             .then((res) => res.json())
-            .then(() => {
-              navigate("/login"); // Redirect to login after signup
+            .then((data) => { 
+              if (data.error) {
+                alert(data.error);
+              } else {
+                navigate("/login");
+              }
             });
         }}
       >
