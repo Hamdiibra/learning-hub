@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import './EnrollmentForm.css';
 
 function EnrollmentForm({ courseId, refreshProfile }) {
-  const [userId] = useState(1); // Assume User ID 1 for testing
+  const userId = localStorage.getItem('userId');; // Assume User ID 1 for testing
 
   const handleEnroll = () => {
     fetch("http://127.0.0.1:5000/enroll", {

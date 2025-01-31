@@ -6,7 +6,6 @@ import "./AuthStyles.css"; // Import external CSS for styling
 
 const SignupSchema = Yup.object().shape({
   name: Yup.string().required("Required"),
-  email: Yup.string().email("Invalid email").required("Required"),
   password: Yup.string().required("Required"),
 });
 
@@ -17,38 +16,46 @@ function Signup() {
     <div className="auth-container">
       <h2 className="auth-title">Sign Up</h2>
       <Formik
-        initialValues={{ name: "", email: "", password: "" }}
+        initialValues={{ name: "", password: "" }}
         validationSchema={SignupSchema}
-        onSubmit={(values) => {
+        onSubmit={(values, { setSubmitting }) => {
+          console.log("Form values:", values);
           fetch("http://127.0.0.1:5000/users", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               username: values.name,
-              email: values.email,
               password: values.password,
               role: "student", // Default role
             }),
           })
-            .then((res) => res.json())
+            .then((res) => {
+              console.log("Response status:", res.status);
+              return res.json();
+            })
             .then((data) => { 
+              console.log("Signup response:", data);
               if (data.error) {
                 alert(data.error);
               } else {
+                // After successful signup, navigate to login
+                alert("Signup successful! Redirecting to login...");
                 navigate("/login");
               }
+              setSubmitting(false);
+            })
+            .catch((err) => {
+              console.error("Error during signup:", err);
+              alert("An error occurred. Please try again.");
+              setSubmitting(false);
             });
         }}
       >
         {({ isSubmitting }) => (
           <Form className="auth-form">
-            <label>Name:</label>
+            <label>Username:</label>
             <Field type="text" name="name" placeholder="Enter your name" />
             <ErrorMessage name="name" component="div" className="error" />
-
-            <label>Email:</label>
-            <Field type="email" name="email" placeholder="Enter your email" />
-            <ErrorMessage name="email" component="div" className="error" />
 
             <label>Password:</label>
             <Field type="password" name="password" placeholder="Enter your password" />

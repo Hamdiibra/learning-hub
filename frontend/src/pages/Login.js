@@ -2,7 +2,7 @@ import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
-import "./AuthStyles.css";
+import "./AuthStyles.css"; // Import external CSS for styling
 
 const LoginSchema = Yup.object().shape({
   username: Yup.string().required("Required"),
@@ -18,20 +18,27 @@ function Login() {
       <Formik
         initialValues={{ username: "", password: "" }}
         validationSchema={LoginSchema}
-        onSubmit={(values) => {
+        onSubmit={(values, { setSubmitting }) => {
           fetch("http://127.0.0.1:5000/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(values),
+            body: JSON.stringify({ username: values.username, password: values.password }),
           })
             .then((res) => res.json())
             .then((data) => {
               if (data.error) {
                 alert(data.error);
               } else {
-                localStorage.setItem("token", data.token);
-                navigate("/courses"); // Redirect to courses page after login
+                localStorage.setItem('token', data.token); // Store the token in local storage
+                localStorage.setItem('userId', data.user.id);
+                navigate("/profile");
               }
+              setSubmitting(false);
+            })
+            .catch((err) => {
+              console.error("Error during login:", err);
+              alert("An error occurred. Please try again.");
+              setSubmitting(false);
             });
         }}
       >
@@ -46,7 +53,7 @@ function Login() {
             <ErrorMessage name="password" component="div" className="error" />
 
             <button type="submit" className="auth-button" disabled={isSubmitting}>
-              Log-in
+              Login
             </button>
           </Form>
         )}

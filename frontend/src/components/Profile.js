@@ -2,12 +2,18 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, Typography, Grid, Button } from "@mui/material";
 
 function Profile() {
-  const [userId] = useState(1); // Assume User ID 1 for testing
+  const [userId] = useState(localStorage.getItem('userId')); // Get User ID from localStorage
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:5000/profile/${userId}`)
+    const token = localStorage.getItem('token'); // Get the JWT token from localStorage
+
+    fetch(`http://127.0.0.1:5000/profile/${userId}`, {
+      headers: {
+        "Authorization": `Bearer ${token}` // Include the JWT token in the request headers
+      }
+    })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch profile");
         return res.json();
