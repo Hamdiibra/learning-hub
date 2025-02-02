@@ -194,7 +194,7 @@ def get_user_enrollments(user_id):
 # Get Enrolled Courses for a User
 @course_routes.route('/profile', methods=['GET'])
 def get_user_profile():
-    user_id = request.args.get('user_id')  # Get user_id directly from the request
+    user_id = request.args.get('user_id')
     user = User.query.get(user_id)
 
     if not user:
@@ -202,7 +202,12 @@ def get_user_profile():
 
     enrolled_courses = [{
         "id": enrollment.course.id,
-        "name": enrollment.course.name,
+        "course": {  # Nesting the course object properly
+            "id": enrollment.course.id,
+            "name": enrollment.course.name,
+            "description": enrollment.course.description,
+            "image_url": enrollment.course.image_url
+        },
         "progress": enrollment.progress
     } for enrollment in user.enrolled_courses]
 

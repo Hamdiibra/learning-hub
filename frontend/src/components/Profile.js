@@ -41,16 +41,17 @@ function Profile() {
     })
     .then((res) => {
       if (!res.ok) throw new Error("Failed to unenroll");
-      return res.text(); // Avoid parsing empty JSON
+      return res.json();
     })
-  
-      .then(() => {
-        setEnrolledCourses((prevCourses) =>
-          prevCourses.filter((enrollment) => enrollment.id !== courseId)
-        );
-      })
-      .catch((error) => setError(error.message));
+    .then(() => {
+      setEnrolledCourses((prevCourses) =>
+        prevCourses.filter((enrollment) => enrollment.course.id !== courseId)
+      );
+    })
+    .catch((error) => setError(error.message));
   };
+  
+  
 
   return (
     <div>
@@ -66,18 +67,19 @@ function Profile() {
             <Grid item key={index} xs={12} sm={6} md={4}>
               <Card>
                 <CardContent>
-                  {enrollment.course ? (
+                {enrollment.course ? (
                     <Typography variant="h5">{enrollment.course.name}</Typography>
                   ) : (
                     <Typography variant="h5">Course name unavailable</Typography>
                   )}
+
                   <Button
                     variant="contained"
-                    color="secondary"
-                    onClick={() => handleUnenroll(enrollment.course_id)}
+                    color="primary"
+                    onClick={() => handleUnenroll(enrollment.course.id)}
                     style={{ marginTop: "10px" }}
                   >
-                    Unenroll
+                    Un-enroll
                   </Button>
                 </CardContent>
               </Card>
