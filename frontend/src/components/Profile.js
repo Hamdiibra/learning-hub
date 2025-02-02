@@ -11,21 +11,25 @@ function Profile() {
       setError("You are not logged in.");
       return;
     }
-    fetch(`http://127.0.0.1:5000/profile?user_id=${userId}`, { // Pass userId directly
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
+    console.log("Fetching enrolled courses for user:", userId); 
+  
+    fetch(`http://127.0.0.1:5000/profile?user_id=${userId}`)
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch enrollments");
+        if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
         return res.json();
       })
       .then((data) => {
-        setEnrolledCourses(data.enrolled_courses); // Adjusted for the structure of the response
+        console.log("Fetched enrolled courses:", data);
+        setEnrolledCourses(data.enrolled_courses);
       })
-      .catch((error) => setError(error.message));
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+        setError(error.message);
+      });
   }, [userId]);
+  
   
   const handleUnenroll = (courseId) => {
     fetch("http://127.0.0.1:5000/unenroll", {
@@ -35,13 +39,14 @@ function Profile() {
       },
       body: JSON.stringify({ user_id: userId, course_id: courseId }),
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to unenroll");
-        return res.json();
-      })
+    .then((res) => {
+      if (!res.ok) throw new Error("Failed to unenroll");
+      return res.text(); // Avoid parsing empty JSON
+    })
+  
       .then(() => {
         setEnrolledCourses((prevCourses) =>
-          prevCourses.filter((enrollment) => enrollment.course_id !== courseId)
+          prevCourses.filter((enrollment) => enrollment.id !== courseId)
         );
       })
       .catch((error) => setError(error.message));

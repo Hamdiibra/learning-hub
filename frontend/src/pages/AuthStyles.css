@@ -51,7 +51,7 @@ input {
 }
 
 .auth-button:hover {
-    background-color: #039e4a;
+    background-color: darkblue;
 }
 
 .error {

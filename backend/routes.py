@@ -135,7 +135,12 @@ def enroll_user():
 
     if not user or not course:
         return jsonify({"error": "Invalid user or course ID"}), 400
-
+    
+    # Check if the user is already enrolled in the course
+    existing_enrollment = Enrollment.query.filter_by(user_id=data['user_id'], course_id=data['course_id']).first()
+    if existing_enrollment:
+        return jsonify({"error": "User is already enrolled in this course"}), 400
+    
     new_enrollment = Enrollment(user=user, course=course, progress="Not Started")
     db.session.add(new_enrollment)
     db.session.commit()
