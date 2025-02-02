@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Course, Enrollment
 
 import logging
@@ -10,11 +11,38 @@ course_routes = Blueprint('courses', __name__)
 def login():
     data = request.get_json()
     user = User.query.filter_by(username=data.get('username')).first()
-    
+
     if not user:
         return jsonify({"error": "User not found"}), 404
 
+    if not check_password_hash(user.password, data.get('password')):
+        return jsonify({"error": "Invalid password"}), 401
+
     return jsonify({"user": {"id": user.id, "username": user.username, "role": user.role}})
+
+@course_routes.route('/signup', methods=['POST'])
+def signup():
+    data = request.get_json()
+
+    if not data.get('username') or not data.get('password'):
+        return jsonify({"error": "Username and password are required"}), 400
+
+    if User.query.filter_by(username=data['username']).first():
+        return jsonify({"error": "Username already taken"}), 400
+
+    hashed_password = generate_password_hash(data['password'])
+
+    new_user = User(
+        username=data['username'],
+        password=hashed_password,
+        role=data.get('role', 'student')
+    )
+
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({"message": "User created successfully!"}), 201
+
 
 # Create Course
 @course_routes.route('/courses', methods=['POST'])
