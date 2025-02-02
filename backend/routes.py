@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify
 from models import db, User, Course, Enrollment
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 import logging
 
@@ -15,20 +14,18 @@ def login():
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    access_token = create_access_token(identity=user.id)
-    return jsonify({"token": access_token, "user": {"id": user.id, "username": user.username, "role": user.role}})
+    return jsonify({"user": {"id": user.id, "username": user.username, "role": user.role}})
 
 # Create Course
 @course_routes.route('/courses', methods=['POST'])
-@jwt_required()
 def create_course():
-    user_id = get_jwt_identity()
+    data = request.get_json()
+    user_id = data.get("user_id")
     user = User.query.get(user_id)
 
     if not user or user.role != "instructor":
         return jsonify({"error": "Unauthorized"}), 403
 
-    data = request.get_json()
     new_course = Course(name=data['name'], instructor_id=user.id)
     db.session.add(new_course)
     db.session.commit()
@@ -52,7 +49,6 @@ def unenroll_user():
     db.session.commit()
 
     return jsonify({"message": "Successfully unenrolled from course"}), 200
-
 
 @course_routes.route('/courses/<int:course_id>', methods=['PATCH'])
 def update_course(course_id):
@@ -94,8 +90,8 @@ def get_courses():
         "id": course.id,
         "name": course.name,
         "instructor": {
-            "id": course.instructor.id,
-            "username": course.instructor.username
+            "id": course.instructor_id,
+            "username": User.query.get(course.instructor_id).username
         },
         "description": course.description,
         "image_url": course.image_url
@@ -140,7 +136,7 @@ def enroll_user():
     if not user or not course:
         return jsonify({"error": "Invalid user or course ID"}), 400
 
-    new_enrollment = Enrollment(user=user, course=course)
+    new_enrollment = Enrollment(user=user, course=course, progress="Not Started")
     db.session.add(new_enrollment)
     db.session.commit()
     return jsonify({"message": "User enrolled successfully!"})
@@ -167,40 +163,42 @@ def update_enrollment(enrollment_id):
     db.session.commit()
     return jsonify({"message": "Enrollment updated successfully!"})
 
-
-@course_routes.route('/enrollments', methods=['GET'])
-def get_enrollments():
-    enrollments = Enrollment.query.all()
-    return jsonify([{
-        "id": enrollment.id,
-        "user_id": enrollment.user.id,
-        "course_id": enrollment.course.id,
-        "progress": enrollment.progress
-    } for enrollment in enrollments])
-
-# Get Enrolled Courses for a User
-@course_routes.route('/profile/<int:user_id>', methods=['GET'])
-@jwt_required()
-def get_user_profile():
-    user_id = get_jwt_identity()
+@course_routes.route('/enrollments/<int:user_id>', methods=['GET'])
+def get_user_enrollments(user_id):
     user = User.query.get(user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    if user.role == 'instructor':
-        created_courses = [{
-            "id": course.id,
-            "name": course.name,
-            "description": course.description
-        } for course in user.courses_taught]
-        return jsonify({"created_courses": created_courses})
+    enrollments = db.session.query(Enrollment).join(Course).filter(Enrollment.user_id == user.id).all()
 
-    elif user.role == 'student':
-        enrolled_courses = [{
+    return jsonify([
+    {
+        "id": enrollment.id,
+        "course_id": enrollment.course.id,
+        "course": {
             "id": enrollment.course.id,
             "name": enrollment.course.name,
-            "progress": enrollment.progress
-        } for enrollment in user.enrolled_courses]
-        return jsonify({"enrolled_courses": enrolled_courses})
+            "description": enrollment.course.description,
+            "image_url": enrollment.course.image_url
+        },
+        "progress": enrollment.progress
+    }
+    for enrollment in enrollments
+])
 
-    return jsonify({"error": "Unknown role"}), 400
+# Get Enrolled Courses for a User
+@course_routes.route('/profile', methods=['GET'])
+def get_user_profile():
+    user_id = request.args.get('user_id')  # Get user_id directly from the request
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    enrolled_courses = [{
+        "id": enrollment.course.id,
+        "name": enrollment.course.name,
+        "progress": enrollment.progress
+    } for enrollment in user.enrolled_courses]
+
+    return jsonify({"enrolled_courses": enrolled_courses})

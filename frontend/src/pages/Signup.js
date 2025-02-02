@@ -40,7 +40,7 @@ function Signup() {
               } else {
                 // After successful signup, navigate to login
                 alert("Signup successful! Redirecting to login...");
-                navigate("/login");
+                navigate("/pages/login");
               }
               setSubmitting(false);
             })

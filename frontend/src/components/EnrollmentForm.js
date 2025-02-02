@@ -2,7 +2,7 @@ import React from "react";
 import './EnrollmentForm.css';
 
 function EnrollmentForm({ courseId, refreshProfile }) {
-  const userId = localStorage.getItem('userId');; // Assume User ID 1 for testing
+  const userId = localStorage.getItem('userId'); // Assume User ID 1 for testing
 
   const handleEnroll = () => {
     fetch("http://127.0.0.1:5000/enroll", {
@@ -14,7 +14,8 @@ function EnrollmentForm({ courseId, refreshProfile }) {
       .then((data) => {
         alert(data.message);
         if (refreshProfile) refreshProfile(); // Refresh Profile after enrolling
-      });
+      })
+      .catch((error) => console.error("Enrollment Error:", error));
   };
 
   return (

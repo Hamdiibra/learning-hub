@@ -28,10 +28,11 @@ function Login() {
             .then((data) => {
               if (data.error) {
                 alert(data.error);
+              } else if (data.user) {
+                localStorage.setItem('userId', data.user.id); // Store userId in local storage
+                navigate("/courses");
               } else {
-                localStorage.setItem('token', data.token); // Store the token in local storage
-                localStorage.setItem('userId', data.user.id);
-                navigate("/profile");
+                alert("Invalid response from server.");
               }
               setSubmitting(false);
             })

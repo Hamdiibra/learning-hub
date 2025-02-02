@@ -41,8 +41,9 @@ function Courses() {
                 <CardContent>
                   <Typography variant="h5">{course.name}</Typography>
                   <Typography variant="subtitle1" color="textSecondary">
-                    Instructor: {course.instructor.username}
+                    Instructor: {course.instructor ? course.instructor.username : "Unknown"}
                   </Typography>
+
                   <Typography variant="body2">{course.description}</Typography>
                   <EnrollmentForm courseId={course.id} />
                 </CardContent>
