@@ -15,33 +15,43 @@ def login():
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    if not check_password_hash(user.password, data.get('password')):
+    if not user.check_password(data.get('password')):  # Check hashed password
         return jsonify({"error": "Invalid password"}), 401
 
     return jsonify({"user": {"id": user.id, "username": user.username, "role": user.role}})
 
+
+
 @course_routes.route('/signup', methods=['POST'])
 def signup():
-    data = request.get_json()
+    try:
+        data = request.get_json()
+        print("Received data:", data)  # Debugging
 
-    if not data.get('username') or not data.get('password'):
-        return jsonify({"error": "Username and password are required"}), 400
+        # Validate data
+        username = data.get('username')
+        password = data.get('password')
+        role = data.get('role', 'student')
 
-    if User.query.filter_by(username=data['username']).first():
-        return jsonify({"error": "Username already taken"}), 400
+        if not username or not password:
+            return jsonify({"error": "Username and password are required"}), 400
 
-    hashed_password = generate_password_hash(data['password'])
+        if User.query.filter_by(username=username).first():
+            return jsonify({"error": "Username already taken"}), 400
 
-    new_user = User(
-        username=data['username'],
-        password=hashed_password,
-        role=data.get('role', 'student')
-    )
+        # Ensure password is correctly passed
+        new_user = User(username=username, role=role, password=password)
 
-    db.session.add(new_user)
-    db.session.commit()
+        db.session.add(new_user)
+        db.session.commit()
 
-    return jsonify({"message": "User created successfully!"}), 201
+        print("User created successfully!")
+        return jsonify({"message": "User created successfully!"}), 201
+    
+    except Exception as e:
+        print("Signup error:", str(e))  # Debugging
+        return jsonify({"error": "An unexpected error occurred", "details": str(e)}), 500
+
 
 
 # Create Course

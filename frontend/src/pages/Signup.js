@@ -24,7 +24,7 @@ function Signup() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              username: values.username, // Corrected field reference
+              username: values.username, 
               password: values.password,
               role: "student",
             }),
