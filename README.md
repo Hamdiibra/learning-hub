@@ -91,7 +91,7 @@ npm start
 
 - View your enrolled courses on your profile.
 
-- As an instructor, create, update, or delete courses.
+
 
 # API Endpoints
 - Authentication:

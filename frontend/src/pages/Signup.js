@@ -35,8 +35,8 @@ function Signup() {
               if (data.error) {
                 alert(data.error);
               } else {
-                alert("Signup successful! Redirecting to login...");
-                navigate("/login");
+                alert("Signup successful! Redirecting to Courses...");
+                navigate("/courses");
               }
             })
             .catch((err) => {

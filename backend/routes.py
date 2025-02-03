@@ -196,13 +196,6 @@ def update_enrollment(enrollment_id):
     if 'progress' in data:
         enrollment.progress = data['progress']
 
-    # Update grade if provided
-    if 'grade' in data:
-        grade = data['grade']
-        if not isinstance(grade, int) or grade < 0 or grade > 100:
-            return jsonify({"error": "Grade must be a number between 0 and 100"}), 400
-        enrollment.grade = grade
-
     db.session.commit()
     return jsonify({"message": "Enrollment updated successfully!"})
 
